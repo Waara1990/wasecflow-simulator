@@ -1,49 +1,67 @@
-import streamlit as st                  # Streamlit pour l'interface utilisateur
-import time                            # Pour simuler le temps de traitement
-import datetime                        # Pour afficher l'heure d'accès
+import streamlit as st
+import json
+from datetime import datetime
 
-# Configuration de l'application Streamlit
-st.set_page_config(page_title="Scénario 1 : Lecture Secouriste", layout="wide")
-st.title("📘 Scénario 1 : Lecture des signes vitaux par un secouriste")
+# 📌 Configuration de la page Streamlit
+st.set_page_config(page_title="Scénario 1 - Lecture Secouriste", layout="centered")
 
-# --- Informations simulées ---
-utilisateur = "Secouriste"
-ressource = "Signes vitaux (température, pouls, saturation, etc.)"
-role_autorisé = "Secouriste"
-autorisé = True  # Oui, dans ce scénario, le secouriste a le droit de lire
+# === TITRE PRINCIPAL ===
+st.title("🆘 Scénario 1 — Lecture des signes vitaux + antécédents par un secouriste")
 
-# --- Affichage des détails de la requête ---
-st.subheader("🧾 Détails de la requête d'accès")
-st.write(f"👤 Utilisateur : **{utilisateur}**")
-st.write(f"📄 Ressource demandée : **{ressource}**")
-st.write(f"🔐 Rôle requis : **{role_autorisé}**")
+# === CONTEXTE DU SCÉNARIO ===
+st.markdown("**Contexte** : Le secouriste est devant une victime inconsciente après un séisme.")
+st.markdown("Il prend les signes vitaux manuellement, puis tente d’accéder aux antécédents médicaux.")
+st.divider()
 
-# --- Simulation de passage au PDP (Policy Decision Point) ---
-st.subheader("⚙️ Traitement de la requête par le PDP")
-with st.spinner("Analyse des règles de sécurité en cours..."):
-    time.sleep(2)  # Pause pour effet de traitement
-    if autorisé:
-        st.success("✅ Accès accordé par le PDP")
-    else:
-        st.error("❌ Accès refusé par le PDP")
+# === ÉTAPE 1 : Lecture directe des signes vitaux (locale) ===
+st.subheader("📍 Lecture locale des signes vitaux")
 
-# --- Journalisation dans la Blockchain (simulation) ---
-st.subheader("🧾 Journalisation dans la Blockchain")
-horodatage = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-st.write(f"📅 Action : Lecture des signes vitaux")
-st.write(f"👤 Par : {utilisateur}")
-st.write(f"🕒 À : {horodatage}")
-st.info("🛡️ L'action a été consignée dans la Blockchain (simulation)")
-
-# --- Affichage des données (lecture autorisée) ---
-st.subheader("📊 Données visibles par le secouriste")
+# Données simulées que le secouriste mesure lui-même
 signes_vitaux = {
-    "Température corporelle": "37.1°C",
-    "Pouls": "78 bpm",
-    "Pression artérielle": "120/80 mmHg",
-    "Saturation O₂": "97%",
-    "Fréquence respiratoire": "16 rpm"
+    "température": "38.6°C",
+    "fréquence cardiaque": "110 bpm",
+    "tension artérielle": "100/65 mmHg"
 }
-
-# Affichage dans une boîte claire
 st.json(signes_vitaux)
+
+# Résultat visuel
+st.success("✅ Lecture locale autorisée — Le secouriste mesure lui-même les signes vitaux")
+
+st.divider()
+
+# === ÉTAPE 2 : Tentative d'accès aux antécédents médicaux ===
+st.subheader("🔐 Consultation des antécédents médicaux")
+
+# Le secouriste coche ces cases pour prouver les conditions d’urgence
+urgence = st.checkbox("✅ Contexte d’urgence détecté", value=True)
+certificat_valide = st.checkbox("✅ Certificat du secouriste vérifié", value=True)
+aucun_medecin = st.checkbox("✅ Aucun médecin n’est disponible", value=True)
+
+# Politique d'élévation temporaire : toutes les conditions doivent être vraies
+if urgence and certificat_valide and aucun_medecin:
+    st.success("🎯 Élévation temporaire accordée vers le rôle 'assistant médical'")
+    
+    # Affichage des antécédents autorisés grâce à l'élévation
+    antecedents = {
+        "antécédents médicaux": [
+            "Diabète de type 1",
+            "Allergie : Pénicilline",
+            "Opération cardiaque (2019)"
+        ]
+    }
+    st.json(antecedents)
+
+    # Simuler une journalisation dans une blockchain locale
+    st.info("📄 Action journalisée dans la blockchain locale")
+    log = {
+        "utilisateur": "secouriste_001",
+        "action": "lecture antécédents",
+        "heure": str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        "rôle_temporaire": "assistant_médical",
+        "motif": "urgence"
+    }
+    st.code(json.dumps(log, indent=4), language="json")
+
+else:
+    # Si l'une des conditions n'est pas cochée
+    st.error("❌ Accès refusé — Condition d’élévation non remplie")
